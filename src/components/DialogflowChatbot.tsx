@@ -34,8 +34,8 @@ const DialogflowChatbot: React.FC = () => {
           --df-messenger-chat-background: #f3f6fc;
           --df-messenger-message-user-background: #d3e3fd;
           --df-messenger-message-bot-background: #fff;
-          bottom: 16px;
-          right: 16px;
+          bottom: 25px;
+          right: 25px;
         }
       `;
       document.head.appendChild(style);

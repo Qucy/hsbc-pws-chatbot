@@ -1,0 +1,29 @@
+.scrollingContainer {
+  width: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+.scrollingText {
+  display: inline-block;
+  white-space: nowrap;
+  padding-left: 100%;
+  animation: scrollText 30s linear infinite;
+  font-weight: 500;
+  font-size: 1rem;
+}
+
+@media (min-width: 768px) {
+  .scrollingText {
+    font-size: 1.25rem;
+  }
+}
+
+@keyframes scrollText {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}

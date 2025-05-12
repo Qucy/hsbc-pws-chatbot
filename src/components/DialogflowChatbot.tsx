@@ -49,6 +49,8 @@ const DialogflowChatbot: React.FC = () => {
         dfMessenger.setAttribute('agent-id', '5771f2b8-e0b8-408b-a52a-328ca1534bb2');
         dfMessenger.setAttribute('language-code', 'en');
         dfMessenger.setAttribute('max-query-length', '-1');
+        // Add enable-feedback attribute to enable thumbs up/down feedback
+        dfMessenger.setAttribute('allow-feedback', 'all');
 
         const dfChatBubble = document.createElement('df-messenger-chat-bubble');
         dfChatBubble.setAttribute('chat-title', 'HSBC Assistant');

@@ -45,10 +45,11 @@ export default function Home() {
       {isClient && (
         <>
           {!isLoggedIn ? (
-            // Login form
+            // Login form with responsive styling
             <div className="login-container" style={{
-              width: "33.33vw",  // 1/3 of viewport width
-              height: "33.33vh", // 1/3 of viewport height
+              width: "90%",  // Use percentage instead of viewport width
+              maxWidth: "450px", // Maximum width for larger screens
+              minHeight: "320px", // Minimum height to ensure content fits
               position: "absolute",
               top: "50%",
               left: "50%",
@@ -59,7 +60,8 @@ export default function Home() {
               backgroundColor: "#fff",
               display: "flex",
               flexDirection: "column",
-              justifyContent: "center"
+              justifyContent: "center",
+              margin: "0 auto" // Center horizontally
             }}>
               <div style={{ textAlign: "center", marginBottom: "20px" }}>
                 <div style={{ display: "flex", justifyContent: "center", marginBottom: "10px" }}>
@@ -68,11 +70,24 @@ export default function Home() {
                     alt="HSBC Logo" 
                     width={210} 
                     height={70}
+                    style={{ maxWidth: "100%", height: "auto" }} // Make image responsive
                     priority
                   />
                 </div>
-                <h2 style={{ color: "gray", marginBottom: "5px" }}>Welcome to HSBC PWS Chatbot PoC</h2>
-                <p style={{ color: "gray", marginBottom: "10px" }}>Please login to access the application.</p>
+                <h2 style={{ 
+                  color: "gray", 
+                  marginBottom: "5px",
+                  fontSize: "calc(1rem + 0.5vw)" // Responsive font size
+                }}>
+                  Welcome to HSBC PWS Chatbot PoC
+                </h2>
+                <p style={{ 
+                  color: "gray", 
+                  marginBottom: "10px",
+                  fontSize: "calc(0.8rem + 0.2vw)" // Responsive font size
+                }}>
+                  Please login to access the application.
+                </p>
               </div>
               
               <form onSubmit={handleLogin}>
@@ -82,14 +97,22 @@ export default function Home() {
                     backgroundColor: "#ffeeee", 
                     padding: "10px", 
                     borderRadius: "4px", 
-                    marginBottom: "15px" 
+                    marginBottom: "15px",
+                    fontSize: "14px", // Smaller font size for error
+                    wordBreak: "break-word" // Prevent text overflow
                   }}>
                     {errorMessage}
                   </div>
                 )}
                 
                 <div style={{ marginBottom: "15px" }}>
-                  <label htmlFor="username" style={{ display: "block", marginBottom: "5px", fontWeight: "bold", color: "#000000" }}>
+                  <label htmlFor="username" style={{ 
+                    display: "block", 
+                    marginBottom: "5px", 
+                    fontWeight: "bold", 
+                    color: "#000000",
+                    fontSize: "16px" // Consistent font size
+                  }}>
                     Username
                   </label>
                   <input
@@ -102,14 +125,21 @@ export default function Home() {
                       padding: "10px",
                       border: "1px solid #ccc",
                       borderRadius: "4px",
-                      color: "#000000"  // Added black color for text
+                      color: "#000000",
+                      boxSizing: "border-box" // Include padding in width calculation
                     }}
                     required
                   />
                 </div>
                 
                 <div style={{ marginBottom: "20px" }}>
-                  <label htmlFor="password" style={{ display: "block", marginBottom: "5px", fontWeight: "bold", color: "#000000" }}>
+                  <label htmlFor="password" style={{ 
+                    display: "block", 
+                    marginBottom: "5px", 
+                    fontWeight: "bold", 
+                    color: "#000000",
+                    fontSize: "16px" // Consistent font size
+                  }}>
                     Password
                   </label>
                   <input
@@ -122,7 +152,8 @@ export default function Home() {
                       padding: "10px",
                       border: "1px solid #ccc",
                       borderRadius: "4px",
-                      color: "#000000"  // Added black color for text
+                      color: "#000000",
+                      boxSizing: "border-box" // Include padding in width calculation
                     }}
                     required
                   />
@@ -138,7 +169,8 @@ export default function Home() {
                     border: "none",
                     borderRadius: "4px",
                     cursor: "pointer",
-                    fontSize: "16px"
+                    fontSize: "16px",
+                    fontWeight: "bold" // Make button text more visible
                   }}
                 >
                   Login

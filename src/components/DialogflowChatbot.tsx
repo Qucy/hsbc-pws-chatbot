@@ -22,7 +22,6 @@ const DialogflowChatbot: React.FC = () => {
     }
 
     // Add style if it doesn't exist
-    // --df-messenger-chat-window-width: 600px;
     if (!document.querySelector('style#dialogflow-style')) {
       const style = document.createElement('style');
       style.id = 'dialogflow-style';
@@ -35,9 +34,37 @@ const DialogflowChatbot: React.FC = () => {
           --df-messenger-chat-background: #f3f6fc;
           --df-messenger-message-user-background: #d3e3fd;
           --df-messenger-message-bot-background: #fff;
-          --df-messenger-chat-window-height: 550px;
           bottom: 25px;
           right: 25px;
+        }
+        
+        /* Responsive chat window sizing */
+        @media (max-width: 480px) {
+          df-messenger {
+            --df-messenger-chat-window-height: 80vh;
+            --df-messenger-chat-window-width: 90vw;
+          }
+        }
+        
+        @media (min-width: 481px) and (max-width: 768px) {
+          df-messenger {
+            --df-messenger-chat-window-height: 70vh;
+            --df-messenger-chat-window-width: 85vw;
+          }
+        }
+        
+        @media (min-width: 769px) and (max-width: 1024px) {
+          df-messenger {
+            --df-messenger-chat-window-height: 65vh;
+            --df-messenger-chat-window-width: 450px;
+          }
+        }
+        
+        @media (min-width: 1025px) {
+          df-messenger {
+            --df-messenger-chat-window-height: 600px;
+            --df-messenger-chat-window-width: 500px;
+          }
         }
       `;
       document.head.appendChild(style);

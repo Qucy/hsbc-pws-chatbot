@@ -41,28 +41,28 @@ const DialogflowChatbot: React.FC = () => {
         /* Responsive chat window sizing */
         @media (max-width: 480px) {
           df-messenger {
-            --df-messenger-chat-window-height: 80vh;
+            --df-messenger-chat-window-height: 75vh;
             --df-messenger-chat-window-width: 90vw;
           }
         }
         
         @media (min-width: 481px) and (max-width: 768px) {
           df-messenger {
-            --df-messenger-chat-window-height: 70vh;
+            --df-messenger-chat-window-height: 65vh;
             --df-messenger-chat-window-width: 85vw;
           }
         }
         
         @media (min-width: 769px) and (max-width: 1024px) {
           df-messenger {
-            --df-messenger-chat-window-height: 65vh;
+            --df-messenger-chat-window-height: 60vh;
             --df-messenger-chat-window-width: 450px;
           }
         }
         
         @media (min-width: 1025px) {
           df-messenger {
-            --df-messenger-chat-window-height: 600px;
+            --df-messenger-chat-window-height: 550px;
             --df-messenger-chat-window-width: 500px;
           }
         }

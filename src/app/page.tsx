@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import DialogflowChatbot from "../components/DialogflowChatbot";
 import HSBCHomePage from "../components/HSBCHomePage";
 import Image from 'next/image';
+import { validateUser } from "../utils/userAccounts";
 
 export default function Home() {
   // State to handle client-side rendering
@@ -16,11 +17,6 @@ export default function Home() {
   // Error message state
   const [errorMessage, setErrorMessage] = useState("");
 
-  // Get credentials from environment variables
-  // Note: In Next.js, client-side env vars must be prefixed with NEXT_PUBLIC_
-  const TEST_USERNAME = process.env.NEXT_PUBLIC_TEST_USERNAME || "qucy";
-  const TEST_PASSWORD = process.env.NEXT_PUBLIC_TEST_PASSWORD || "123";
-
   // Set isClient to true when component mounts
   useEffect(() => {
     setIsClient(true);
@@ -30,8 +26,8 @@ export default function Home() {
   const handleLogin = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
-    // Check credentials against test account
-    if (username === TEST_USERNAME && password === TEST_PASSWORD) {
+    // Use the validateUser function from userAccounts.ts
+    if (validateUser(username, password)) {
       setIsLoggedIn(true);
       setErrorMessage("");
     } else {

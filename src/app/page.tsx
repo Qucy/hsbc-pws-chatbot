@@ -19,9 +19,18 @@ export default function Home() {
   // Loading state for login process
   const [isLoading, setIsLoading] = useState(false);
 
-  // Set isClient to true when component mounts
+  // Set isClient to true when component mounts and check for stored login state
   useEffect(() => {
     setIsClient(true);
+    
+    // Check if user is already logged in from localStorage
+    const storedLoginState = localStorage.getItem('hsbc_user_logged_in');
+    const storedUsername = localStorage.getItem('hsbc_username');
+    
+    if (storedLoginState === 'true' && storedUsername) {
+      setIsLoggedIn(true);
+      setUsername(storedUsername);
+    }
   }, []);
 
   // Handle login form submission
@@ -37,12 +46,26 @@ export default function Home() {
       if (validateUser(username, password)) {
         setIsLoggedIn(true);
         setErrorMessage("");
+        
+        // Store login state in localStorage
+        localStorage.setItem('hsbc_user_logged_in', 'true');
+        localStorage.setItem('hsbc_username', username);
       } else {
         setErrorMessage("Invalid username or password. Please try again.");
       }
       // Set loading state back to false
       setIsLoading(false);
-    }, 2000);
+    }, 1500);
+  };
+  
+  // Handle logout
+  const handleLogout = () => {
+    // Clear login state
+    setIsLoggedIn(false);
+    
+    // Remove from localStorage
+    localStorage.removeItem('hsbc_user_logged_in');
+    localStorage.removeItem('hsbc_username');
   };
 
   return (
@@ -223,6 +246,30 @@ export default function Home() {
             <>
               {/* HSBC Home page */}
               <HSBCHomePage />
+              
+              {/* Add logout button */}
+              <div style={{ 
+                position: "fixed", 
+                top: "6px", 
+                right: "10px", 
+                zIndex: 1000 
+              }}>
+                <button 
+                  onClick={handleLogout}
+                  style={{
+                    padding: "8px 12px",
+                    backgroundColor: "#db0011", // HSBC red
+                    color: "white",
+                    border: "none",
+                    borderRadius: "4px",
+                    cursor: "pointer",
+                    fontSize: "14px",
+                    fontWeight: "bold"
+                  }}
+                >
+                  Logout
+                </button>
+              </div>
               
               {/* HSBC Chatbot - Google Agent Builder */}
               <DialogflowChatbot />

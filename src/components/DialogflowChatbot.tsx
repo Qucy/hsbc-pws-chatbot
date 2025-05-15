@@ -79,12 +79,13 @@ const DialogflowChatbot: React.FC = () => {
         dfMessenger.setAttribute('language-code', process.env.NEXT_PUBLIC_DIALOGFLOW_LANGUAGE_CODE || 'en');
         dfMessenger.setAttribute('max-query-length', '-1');
         dfMessenger.setAttribute('allow-feedback', 'all');
-        dfMessenger.setAttribute('chat-title', 'Chat with us');
         dfMessenger.setAttribute('location', process.env.NEXT_PUBLIC_DIALOGFLOW_LOCATION || 'us');
+        dfMessenger.setAttribute('storage-option', 'none');
 
         const dfChatBubble = document.createElement('df-messenger-chat-bubble');
         dfChatBubble.setAttribute('chat-icon', './genai-chat-icon.svg');
         dfChatBubble.setAttribute('chat-title', 'Chat with us');
+        dfChatBubble.setAttribute('chat-subtitle', '*AI-generated message, verify important details independently*');
         dfChatBubble.setAttribute('chat-title-icon', './star.png');
 
         dfMessenger.appendChild(dfChatBubble);

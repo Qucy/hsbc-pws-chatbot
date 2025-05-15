@@ -33,6 +33,40 @@ export default function Home() {
     }
   }, []);
 
+  // Auto-logout after 30 minutes of inactivity
+  useEffect(() => {
+    if (isLoggedIn) {
+      let logoutTimer: NodeJS.Timeout;
+      
+      // Function to reset the timer
+      const resetTimer = () => {
+        if (logoutTimer) clearTimeout(logoutTimer);
+        logoutTimer = setTimeout(() => {
+          handleLogout();
+        }, 30 * 60 * 1000); // 30 minutes in milliseconds
+      };
+      
+      // Set initial timer
+      resetTimer();
+      
+      // Reset timer on user activity
+      const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
+      
+      // Add event listeners to reset timer on user activity
+      events.forEach(event => {
+        window.addEventListener(event, resetTimer);
+      });
+      
+      // Cleanup function
+      return () => {
+        if (logoutTimer) clearTimeout(logoutTimer);
+        events.forEach(event => {
+          window.removeEventListener(event, resetTimer);
+        });
+      };
+    }
+  }, [isLoggedIn]);
+
   // Handle login form submission
   const handleLogin = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -246,30 +280,6 @@ export default function Home() {
             <>
               {/* HSBC Home page */}
               <HSBCHomePage />
-              
-              {/* Add logout button */}
-              <div style={{ 
-                position: "fixed", 
-                top: "6px", 
-                right: "10px", 
-                zIndex: 1000 
-              }}>
-                <button 
-                  onClick={handleLogout}
-                  style={{
-                    padding: "8px 12px",
-                    backgroundColor: "#db0011", // HSBC red
-                    color: "white",
-                    border: "none",
-                    borderRadius: "4px",
-                    cursor: "pointer",
-                    fontSize: "14px",
-                    fontWeight: "bold"
-                  }}
-                >
-                  Logout
-                </button>
-              </div>
               
               {/* HSBC Chatbot - Google Agent Builder */}
               <DialogflowChatbot />

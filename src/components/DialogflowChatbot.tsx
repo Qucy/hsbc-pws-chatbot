@@ -74,11 +74,13 @@ const DialogflowChatbot: React.FC = () => {
     const addDialogflowElements = () => {
       if (!document.querySelector('df-messenger')) {
         const dfMessenger = document.createElement('df-messenger');
-        dfMessenger.setAttribute('project-id', 'hsbc-1044360-ihubasp-sandbox');
-        dfMessenger.setAttribute('agent-id', '5771f2b8-e0b8-408b-a52a-328ca1534bb2');
-        dfMessenger.setAttribute('language-code', 'en');
+        dfMessenger.setAttribute('project-id', process.env.NEXT_PUBLIC_DIALOGFLOW_PROJECT_ID || '');
+        dfMessenger.setAttribute('agent-id', process.env.NEXT_PUBLIC_DIALOGFLOW_AGENT_ID || '');
+        dfMessenger.setAttribute('language-code', process.env.NEXT_PUBLIC_DIALOGFLOW_LANGUAGE_CODE || 'en');
         dfMessenger.setAttribute('max-query-length', '-1');
         dfMessenger.setAttribute('allow-feedback', 'all');
+        dfMessenger.setAttribute('chat-title', 'Chat with us');
+        dfMessenger.setAttribute('location', process.env.NEXT_PUBLIC_DIALOGFLOW_LOCATION || 'us');
 
         const dfChatBubble = document.createElement('df-messenger-chat-bubble');
         dfChatBubble.setAttribute('chat-icon', './genai-chat-icon.svg');

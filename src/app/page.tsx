@@ -16,6 +16,8 @@ export default function Home() {
   const [password, setPassword] = useState("");
   // Error message state
   const [errorMessage, setErrorMessage] = useState("");
+  // Loading state for login process
+  const [isLoading, setIsLoading] = useState(false);
 
   // Set isClient to true when component mounts
   useEffect(() => {
@@ -26,13 +28,21 @@ export default function Home() {
   const handleLogin = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
-    // Use the validateUser function from userAccounts.ts
-    if (validateUser(username, password)) {
-      setIsLoggedIn(true);
-      setErrorMessage("");
-    } else {
-      setErrorMessage("Invalid username or password. Please try again.");
-    }
+    // Set loading state to true
+    setIsLoading(true);
+    
+    // Simulate loading time (1 second)
+    setTimeout(() => {
+      // Use the validateUser function from userAccounts.ts
+      if (validateUser(username, password)) {
+        setIsLoggedIn(true);
+        setErrorMessage("");
+      } else {
+        setErrorMessage("Invalid username or password. Please try again.");
+      }
+      // Set loading state back to false
+      setIsLoading(false);
+    }, 2000);
   };
 
   return (
@@ -155,21 +165,56 @@ export default function Home() {
                   />
                 </div>
                 
+                {/* Loading bar that appears during login process */}
+                {isLoading && (
+                  <div style={{ marginBottom: "15px" }}>
+                    <div style={{
+                      width: "100%",
+                      height: "4px",
+                      backgroundColor: "#f0f0f0",
+                      borderRadius: "2px",
+                      overflow: "hidden"
+                    }}>
+                      <div style={{
+                        width: "30%",
+                        height: "100%",
+                        backgroundColor: "#db0011", // HSBC red color
+                        borderRadius: "2px",
+                        animation: "loading 1s infinite linear"
+                      }}></div>
+                    </div>
+                    <style jsx>{`
+                      @keyframes loading {
+                        0% {
+                          transform: translateX(-100%);
+                        }
+                        100% {
+                          transform: translateX(400%);
+                        }
+                      }
+                    `}</style>
+                  </div>
+                )}
+                
                 <button
                   type="submit"
+                  disabled={isLoading}
                   style={{
                     width: "100%",
                     padding: "12px",
-                    backgroundColor: "#000000",
+                    backgroundColor: isLoading ? "#666666" : "#000000",
                     color: "white",
                     border: "none",
                     borderRadius: "4px",
-                    cursor: "pointer",
+                    cursor: isLoading ? "not-allowed" : "pointer",
                     fontSize: "16px",
-                    fontWeight: "bold" // Make button text more visible
+                    fontWeight: "bold", // Make button text more visible
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center"
                   }}
                 >
-                  Login
+                  {isLoading ? "Logging in..." : "Login"}
                 </button>
               </form>
             </div>

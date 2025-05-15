@@ -1,0 +1,13 @@
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  reactStrictMode: true,
+  env: {
+    USER_ACCOUNTS: process.env.USER_ACCOUNTS,
+    NEXT_PUBLIC_DIALOGFLOW_PROJECT_ID: process.env.NEXT_PUBLIC_DIALOGFLOW_PROJECT_ID,
+    NEXT_PUBLIC_DIALOGFLOW_AGENT_ID: process.env.NEXT_PUBLIC_DIALOGFLOW_AGENT_ID,
+    NEXT_PUBLIC_DIALOGFLOW_LANGUAGE_CODE: process.env.NEXT_PUBLIC_DIALOGFLOW_LANGUAGE_CODE,
+    NEXT_PUBLIC_DIALOGFLOW_LOCATION: process.env.NEXT_PUBLIC_DIALOGFLOW_LOCATION,
+  },
+}
+
+module.exports = nextConfig

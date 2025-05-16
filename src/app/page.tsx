@@ -100,6 +100,10 @@ export default function Home() {
     // Remove from localStorage
     localStorage.removeItem('hsbc_user_logged_in');
     localStorage.removeItem('hsbc_username');
+    
+    // Force a re-render to ensure components update
+    setIsClient(false);
+    setTimeout(() => setIsClient(true), 0);
   };
 
   return (
@@ -279,7 +283,7 @@ export default function Home() {
             // Show content only after successful login
             <>
               {/* HSBC Home page */}
-              <HSBCHomePage />
+              <HSBCHomePage onLogout={handleLogout} />
               
               {/* HSBC Chatbot - Google Agent Builder */}
               <DialogflowChatbot />

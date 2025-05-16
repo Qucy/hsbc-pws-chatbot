@@ -1,12 +1,18 @@
 "use client";
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 
 // This component integrates the Google Agent Builder (Dialogflow) chatbot
 const DialogflowChatbot: React.FC = () => {
+  // Add a ref to track initialization
+  const isInitialized = useRef(false);
+  
   useEffect(() => {
+    console.log("DialogflowChatbot component mounted");
+    
     // Add stylesheet if it doesn't exist
     if (!document.querySelector('link[href*="df-messenger-default.css"]')) {
+      console.log("Adding Dialogflow CSS");
       const link = document.createElement('link');
       link.rel = 'stylesheet';
       link.href = 'https://www.gstatic.com/dialogflow-console/fast/df-messenger/prod/v1/themes/df-messenger-default.css';
@@ -15,6 +21,7 @@ const DialogflowChatbot: React.FC = () => {
 
     // Add script if it doesn't exist
     if (!document.querySelector('script[src*="df-messenger.js"]')) {
+      console.log("Adding Dialogflow script");
       const script = document.createElement('script');
       script.src = 'https://www.gstatic.com/dialogflow-console/fast/df-messenger/prod/v1/df-messenger.js';
       script.async = true;
@@ -23,6 +30,7 @@ const DialogflowChatbot: React.FC = () => {
 
     // Add style if it doesn't exist
     if (!document.querySelector('style#dialogflow-style')) {
+      console.log("Adding Dialogflow custom styles");
       const style = document.createElement('style');
       style.id = 'dialogflow-style';
       style.textContent = `
@@ -72,48 +80,95 @@ const DialogflowChatbot: React.FC = () => {
 
     // Function to add Dialogflow elements
     const addDialogflowElements = () => {
-      if (!document.querySelector('df-messenger')) {
-        const dfMessenger = document.createElement('df-messenger');
-        dfMessenger.setAttribute('project-id', process.env.NEXT_PUBLIC_DIALOGFLOW_PROJECT_ID || '');
-        dfMessenger.setAttribute('agent-id', process.env.NEXT_PUBLIC_DIALOGFLOW_AGENT_ID || '');
-        dfMessenger.setAttribute('language-code', process.env.NEXT_PUBLIC_DIALOGFLOW_LANGUAGE_CODE || 'en');
-        dfMessenger.setAttribute('max-query-length', '-1');
-        dfMessenger.setAttribute('allow-feedback', 'all');
-        dfMessenger.setAttribute('location', process.env.NEXT_PUBLIC_DIALOGFLOW_LOCATION || 'us');
-        dfMessenger.setAttribute('storage-option', 'none');
+      if (!document.querySelector('df-messenger') && !isInitialized.current) {
+        console.log("Adding Dialogflow messenger elements");
+        isInitialized.current = true;
+        
+        try {
+          const dfMessenger = document.createElement('df-messenger');
+          dfMessenger.setAttribute('project-id', process.env.NEXT_PUBLIC_DIALOGFLOW_PROJECT_ID || '');
+          dfMessenger.setAttribute('agent-id', process.env.NEXT_PUBLIC_DIALOGFLOW_AGENT_ID || '');
+          dfMessenger.setAttribute('language-code', process.env.NEXT_PUBLIC_DIALOGFLOW_LANGUAGE_CODE || 'en');
+          dfMessenger.setAttribute('max-query-length', '-1');
+          dfMessenger.setAttribute('allow-feedback', 'all');
+          dfMessenger.setAttribute('location', process.env.NEXT_PUBLIC_DIALOGFLOW_LOCATION || 'us');
+          dfMessenger.setAttribute('storage-option', 'none');
+          // Add an ID to make it easier to find and remove
+          dfMessenger.id = 'hsbc-dialogflow-messenger';
 
-        const dfChatBubble = document.createElement('df-messenger-chat-bubble');
-        dfChatBubble.setAttribute('chat-icon', './genai-chat-icon.svg');
-        dfChatBubble.setAttribute('chat-title', 'Chat with us');
-        dfChatBubble.setAttribute('chat-subtitle', '*AI-generated message, verify important details independently*');
-        dfChatBubble.setAttribute('chat-title-icon', './star.png');
+          const dfChatBubble = document.createElement('df-messenger-chat-bubble');
+          dfChatBubble.setAttribute('chat-icon', './genai-chat-icon.svg');
+          dfChatBubble.setAttribute('chat-title', 'Chat with us');
+          dfChatBubble.setAttribute('chat-subtitle', '*AI-generated message, verify important details independently*');
+          dfChatBubble.setAttribute('chat-title-icon', './star.png');
 
-        dfMessenger.appendChild(dfChatBubble);
-        document.body.appendChild(dfMessenger);
+          dfMessenger.appendChild(dfChatBubble);
+          
+          // Append to the app container instead of body
+          const appContainer = document.querySelector('.hsbc-app-container');
+          if (appContainer) {
+            console.log("Appending to app container");
+            appContainer.appendChild(dfMessenger);
+          } else {
+            console.log("App container not found, appending to body");
+            document.body.appendChild(dfMessenger);
+          }
+          
+          console.log("Dialogflow elements added successfully");
+        } catch (error) {
+          console.error("Error adding Dialogflow elements:", error);
+        }
       }
     };
 
     // Check if the script is already loaded
     if (window.customElements && window.customElements.get('df-messenger')) {
+      console.log("Dialogflow script already loaded");
       addDialogflowElements();
     } else {
       // Wait for the script to load
+      console.log("Waiting for Dialogflow script to load");
       const scriptElement = document.querySelector('script[src*="df-messenger.js"]');
       if (scriptElement) {
-        scriptElement.addEventListener('load', addDialogflowElements);
+        scriptElement.addEventListener('load', () => {
+          console.log("Dialogflow script loaded");
+          // Add a small delay to ensure custom elements are registered
+          setTimeout(addDialogflowElements, 500);
+        });
       }
     }
 
     // Cleanup function
     return () => {
+      console.log("DialogflowChatbot component unmounting");
+      
+      // Remove the event listener
       const scriptElement = document.querySelector('script[src*="df-messenger.js"]');
       if (scriptElement) {
         scriptElement.removeEventListener('load', addDialogflowElements);
       }
+      
+      // Remove the Dialogflow messenger element
+      const dfMessenger = document.getElementById('hsbc-dialogflow-messenger');
+      if (dfMessenger) {
+        console.log("Removing Dialogflow messenger element");
+        dfMessenger.remove();
+      } else {
+        // Try with querySelector as fallback
+        const dfMessengerElement = document.querySelector('df-messenger');
+        if (dfMessengerElement) {
+          console.log("Removing Dialogflow messenger element (fallback)");
+          dfMessengerElement.remove();
+        }
+      }
+      
+      // Reset initialization flag
+      isInitialized.current = false;
     };
   }, []);
 
-  return null;
+  // Return a div to ensure the component is properly mounted in the React tree
+  return <div id="dialogflow-container" style={{ display: 'contents' }}></div>;
 };
 
 export default DialogflowChatbot;

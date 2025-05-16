@@ -4,7 +4,11 @@ import Image from 'next/image'
 import { useState } from "react"
 import styles from './ScrollingText.module.css' // We'll create this file
 
-export default function Home() {
+interface HSBCHomePageProps {
+  onLogout?: () => void;
+}
+
+export default function HSBCHomePage({ onLogout }: HSBCHomePageProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   
   return (
@@ -36,10 +40,13 @@ export default function Home() {
               <span className="text-sm">English</span>
               <ChevronRight className="h-4 w-4 rotate-90" />
             </div>
-            <div className="bg-red-600 px-4 py-3">
-              <span className="text-sm font-medium">Log on</span>
+            <button 
+              onClick={onLogout}
+              className="bg-red-600 px-4 py-3 cursor-pointer"
+            >
+              <span className="text-sm font-medium">Log out</span>
               <ChevronRight className="ml-1 inline h-4 w-4 rotate-90" />
-            </div>
+            </button>
           </div>
         </div>
       </div>

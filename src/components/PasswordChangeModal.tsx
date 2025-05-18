@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { updatePassword } from '../utils/userAccounts';
 
 interface PasswordChangeModalProps {
   username: string;
@@ -35,30 +36,15 @@ const PasswordChangeModal = ({ username, currentPassword, onClose, onSuccess }: 
     setIsLoading(true);
     
     try {
-      // Use environment variable for token
-      const token = process.env.NEXT_PUBLIC_AUTH_TOKEN;
+      // Use the updatePassword function from userAccounts.ts
+      const result = await updatePassword(username, currentPassword, newPassword);
       
-      // Call the password update API
-      const response = await fetch('https://pws-user-api-1013020134920.asia-east2.run.app/api/users/password', {
-        method: 'PUT',
-        headers: {
-          'Authorization': `bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          username: username,
-          current_password: currentPassword,
-          new_password: newPassword
-        })
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to update password');
+      if (result.success) {
+        // Password updated successfully
+        onSuccess();
+      } else {
+        throw new Error(result.message);
       }
-      
-      // Password updated successfully
-      onSuccess();
     } catch (error) {
       setError(error instanceof Error ? error.message : 'An error occurred');
     } finally {

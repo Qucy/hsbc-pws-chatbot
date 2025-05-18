@@ -1,0 +1,10 @@
+{
+  "wpbhkuser": {
+    "password": "wpb123",
+    "isDefaultPassword": false
+  },
+  "qucy.wei.qiu@hsbc.com": {
+    "password": "qucy123456",
+    "isDefaultPassword": true
+  }
+}

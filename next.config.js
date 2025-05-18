@@ -3,6 +3,7 @@ const nextConfig = {
   reactStrictMode: true,
   env: {
     USER_ACCOUNTS: process.env.USER_ACCOUNTS,
+    AUTH_MODE: process.env.AUTH_MODE || 'api', // Default to API mode
     NEXT_PUBLIC_DIALOGFLOW_PROJECT_ID: process.env.NEXT_PUBLIC_DIALOGFLOW_PROJECT_ID,
     NEXT_PUBLIC_DIALOGFLOW_AGENT_ID: process.env.NEXT_PUBLIC_DIALOGFLOW_AGENT_ID,
     NEXT_PUBLIC_DIALOGFLOW_LANGUAGE_CODE: process.env.NEXT_PUBLIC_DIALOGFLOW_LANGUAGE_CODE,

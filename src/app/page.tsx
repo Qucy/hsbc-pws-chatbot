@@ -5,6 +5,7 @@ import DialogflowChatbot from "../components/DialogflowChatbot";
 import HSBCHomePage from "../components/HSBCHomePage";
 import Image from 'next/image';
 import { validateUser } from "../utils/userAccounts";
+import PasswordChangeModal from "../components/PasswordChangeModal";
 
 export default function Home() {
   // State to handle client-side rendering
@@ -18,6 +19,8 @@ export default function Home() {
   const [errorMessage, setErrorMessage] = useState("");
   // Loading state for login process
   const [isLoading, setIsLoading] = useState(false);
+  // State to control password change modal visibility
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
 
   // Set isClient to true when component mounts and check for stored login state
   useEffect(() => {
@@ -26,10 +29,16 @@ export default function Home() {
     // Check if user is already logged in from localStorage
     const storedLoginState = localStorage.getItem('hsbc_user_logged_in');
     const storedUsername = localStorage.getItem('hsbc_username');
+    const storedDefaultPasswordState = localStorage.getItem('hsbc_default_password');
     
     if (storedLoginState === 'true' && storedUsername) {
       setIsLoggedIn(true);
       setUsername(storedUsername);
+      
+      // Check if user has a default password
+      if (storedDefaultPasswordState === 'true') {
+        setShowPasswordModal(true);
+      }
     }
   }, []);
 
@@ -68,27 +77,43 @@ export default function Home() {
   }, [isLoggedIn]);
 
   // Handle login form submission
-  const handleLogin = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
     // Set loading state to true
     setIsLoading(true);
     
     // Simulate loading time (1 second)
-    setTimeout(() => {
-      // Use the validateUser function from userAccounts.ts
-      if (validateUser(username, password)) {
-        setIsLoggedIn(true);
-        setErrorMessage("");
+    setTimeout(async () => {
+      try {
+        // Use the validateUser function from userAccounts.ts
+        const authResult = await validateUser(username, password);
         
-        // Store login state in localStorage
-        localStorage.setItem('hsbc_user_logged_in', 'true');
-        localStorage.setItem('hsbc_username', username);
-      } else {
-        setErrorMessage("Invalid username or password. Please try again.");
+        if (authResult.success) {
+          setIsLoggedIn(true);
+          setErrorMessage("");
+          
+          // Store login state in localStorage
+          localStorage.setItem('hsbc_user_logged_in', 'true');
+          localStorage.setItem('hsbc_username', username);
+          
+          // Check if user has a default password
+          if (authResult.isDefaultPassword) {
+            setShowPasswordModal(true);
+            localStorage.setItem('hsbc_default_password', 'true');
+          } else {
+            localStorage.removeItem('hsbc_default_password');
+          }
+        } else {
+          setErrorMessage(authResult.message || "Invalid username or password. Please try again.");
+        }
+      } catch (error) {
+        setErrorMessage("An error occurred during login. Please try again.");
+        console.error("Login error:", error);
+      } finally {
+        // Set loading state back to false
+        setIsLoading(false);
       }
-      // Set loading state back to false
-      setIsLoading(false);
     }, 1500);
   };
   
@@ -100,10 +125,24 @@ export default function Home() {
     // Remove from localStorage
     localStorage.removeItem('hsbc_user_logged_in');
     localStorage.removeItem('hsbc_username');
+    localStorage.removeItem('hsbc_default_password');
     
     // Force a re-render to ensure components update
     setIsClient(false);
     setTimeout(() => setIsClient(true), 0);
+  };
+  
+  // Handle password change success
+  const handlePasswordChangeSuccess = () => {
+    setShowPasswordModal(false);
+    localStorage.removeItem('hsbc_default_password');
+    // You might want to show a success message here
+  };
+  
+  // Handle password change later
+  const handlePasswordChangeLater = () => {
+    setShowPasswordModal(false);
+    // We keep the default password state in localStorage so it will show again next login
   };
 
   return (
@@ -282,6 +321,16 @@ export default function Home() {
           ) : (
             // Show content only after successful login
             <>
+              {/* Password change modal */}
+              {showPasswordModal && (
+                <PasswordChangeModal
+                  username={username}
+                  currentPassword={password}
+                  onClose={handlePasswordChangeLater}
+                  onSuccess={handlePasswordChangeSuccess}
+                />
+              )}
+              
               {/* HSBC Home page */}
               <HSBCHomePage onLogout={handleLogout} />
               

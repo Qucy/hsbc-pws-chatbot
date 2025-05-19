@@ -49,6 +49,7 @@ export async function POST(request: NextRequest) {
     
     const accounts = getUserAccounts();
     
+    // Since username is now hashed, we directly check if it exists in accounts
     if (!accounts[username]) {
       return NextResponse.json(
         { message: 'Invalid username or password' },
@@ -56,6 +57,7 @@ export async function POST(request: NextRequest) {
       );
     }
     
+    // Since password is now hashed, we directly compare the hashed values
     if (accounts[username].password !== password) {
       return NextResponse.json(
         { message: 'Invalid username or password' },
@@ -94,6 +96,7 @@ export async function PUT(request: NextRequest) {
     
     const accounts = getUserAccounts();
     
+    // Since username is now hashed, we directly check if it exists in accounts
     if (!accounts[username]) {
       return NextResponse.json(
         { message: 'User not found' },
@@ -101,6 +104,7 @@ export async function PUT(request: NextRequest) {
       );
     }
     
+    // Since password is now hashed, we directly compare the hashed values
     if (accounts[username].password !== current_password) {
       return NextResponse.json(
         { message: 'Current password is incorrect' },
@@ -108,7 +112,7 @@ export async function PUT(request: NextRequest) {
       );
     }
     
-    // Update the password and set isDefaultPassword to false
+    // Update the password (already hashed) and set isDefaultPassword to false
     accounts[username].password = new_password;
     accounts[username].isDefaultPassword = false;
     

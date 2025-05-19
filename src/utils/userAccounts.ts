@@ -1,5 +1,6 @@
 // Utility to handle user accounts from environment variables or local JSON file
 import { parse } from 'json5'; // More forgiving JSON parser
+import crypto from 'crypto'; // Add crypto import
 
 interface UserAccount {
   password: string;
@@ -56,6 +57,11 @@ export function getUserAccounts(): UserAccounts {
   }
 }
 
+// Function to hash a string using SHA-256
+function hashString(str: string): string {
+  return crypto.createHash('sha256').update(str).digest('hex');
+}
+
 // Validate user with API
 async function validateUserWithApi(username: string, password: string): Promise<AuthResponse> {
   try {
@@ -95,6 +101,10 @@ async function validateUserWithApi(username: string, password: string): Promise<
 // Validate user with local API
 async function validateUserWithLocal(username: string, password: string): Promise<AuthResponse> {
   try {
+    // Hash the username and password before sending to the API
+    const hashedUsername = hashString(username);
+    const hashedPassword = hashString(password);
+    
     // Call the local authentication API
     const response = await fetch('/api/local-auth', {
       method: 'POST',
@@ -102,8 +112,8 @@ async function validateUserWithLocal(username: string, password: string): Promis
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        username,
-        password
+        username: hashedUsername,
+        password: hashedPassword
       })
     });
     
@@ -177,15 +187,20 @@ async function updatePasswordWithLocal(
   newPassword: string
 ): Promise<{ success: boolean; message: string }> {
   try {
+    // Hash the username and passwords before sending to the API
+    const hashedUsername = hashString(username);
+    const hashedCurrentPassword = hashString(currentPassword);
+    const hashedNewPassword = hashString(newPassword);
+    
     const response = await fetch('/api/local-auth', {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        username,
-        current_password: currentPassword,
-        new_password: newPassword
+        username: hashedUsername,
+        current_password: hashedCurrentPassword,
+        new_password: hashedNewPassword
       })
     });
 

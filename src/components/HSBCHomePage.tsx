@@ -167,7 +167,7 @@ export default function HSBCHomePage({ onLogout }: HSBCHomePageProps) {
         <div className="container mx-auto px-4">
           <div className={styles.scrollingContainer}>
             <div className={styles.scrollingText}>
-              HSBC PWS Chatbot PoC (Proof of Concept - External) || STRICTLY NO INTERNAL OR CUSTOMER DATA UPLOADS || AI outputs are for PoC evaluation ONLY - ALWAYS VERIFY - DO NOT use in live production or real-world situations.
+              HSBC WPB Chatbot PoC (Proof of Concept - for internal staff) || HIGHLY CONFIDENTIAL - STRICTLY NO INTERNAL OR CUSTOMER DATA UPLOADS || AI outputs are for PoC evaluation ONLY - ALWAYS VERIFY - DO NOT use in live production or real-world situations.
             </div>
           </div>
         </div>

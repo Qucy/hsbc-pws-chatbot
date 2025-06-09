@@ -98,7 +98,7 @@ const DialogflowChatbot: React.FC = () => {
 
           const dfChatBubble = document.createElement('df-messenger-chat-bubble');
           dfChatBubble.setAttribute('chat-icon', './genai-chat-icon.svg');
-          dfChatBubble.setAttribute('chat-title', 'Chat with us');
+          dfChatBubble.setAttribute('chat-title', 'Your AI Assistant');
           dfChatBubble.setAttribute('chat-subtitle', '*AI-generated message, verify important details independently*');
           dfChatBubble.setAttribute('chat-title-icon', './star.png');
 

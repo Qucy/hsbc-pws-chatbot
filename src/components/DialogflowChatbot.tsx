@@ -46,6 +46,11 @@ const DialogflowChatbot: React.FC = () => {
           right: 25px;
         }
         
+        /* Add custom styling for the chat bubble */
+        df-messenger-chat-bubble {
+          --df-messenger-chat-bubble-background:rgb(163, 163, 163); /* Gray color */
+        }
+        
         /* Responsive chat window sizing */
         @media (max-width: 480px) {
           df-messenger {

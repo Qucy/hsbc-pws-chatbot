@@ -29,6 +29,9 @@ export default function HSBCHomePage({ onLogout }: HSBCHomePageProps) {
             <Link href="#" className="py-3 text-sm font-medium">
               Global Private Banking
             </Link>
+            <Link href="/genai-chatbot" className="py-3 text-sm font-medium hover:text-red-400 transition-colors">
+              Your AI Assistant
+            </Link>
           </div>
           <div className="md:hidden">
             <Link href="#" className="border-b-2 border-red-600 py-3 text-sm font-medium">
@@ -150,12 +153,18 @@ export default function HSBCHomePage({ onLogout }: HSBCHomePageProps) {
                   </Link>
                   <span className="block text-xs text-gray-600">Analysis & Market Data</span>
                 </div>
-                <div className="py-2">
+                <div className="py-2 border-b border-gray-100">
                   <Link href="#" className="text-lg font-medium text-black">
                     Offers
                   </Link>
                   <span className="block text-xs text-gray-600">Latest Rewards</span>
                 </div>
+                <div className="py-2">
+                   <Link href="/genai-chatbot" className="text-lg font-medium text-red-600">
+                     Your AI Assistant
+                   </Link>
+                   <span className="block text-xs text-gray-600">AI Chat Support</span>
+                 </div>
               </div>
             </div>
           </div>

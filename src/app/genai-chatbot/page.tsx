@@ -6,6 +6,8 @@ import Image from 'next/image';
 import { ChevronLeft, Send, User, Bot, ThumbsUp, ThumbsDown, RotateCcw, ChevronDown, ChevronUp } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { validateUser } from "../../utils/userAccounts";
+import PasswordChangeModal from "../../components/PasswordChangeModal";
 
 interface Message {
   id: string;
@@ -25,6 +27,20 @@ interface ContentData {
 }
 
 export default function GenAIChatbot() {
+  // State to handle client-side rendering
+  const [isClient, setIsClient] = useState(false);
+  // State to track if user is logged in
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  // States for username and password inputs
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  // Error message state
+  const [errorMessage, setErrorMessage] = useState("");
+  // Loading state for login process
+  const [isLoginLoading, setIsLoginLoading] = useState(false);
+  // State to control password change modal visibility
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -41,6 +57,129 @@ export default function GenAIChatbot() {
   const [collapsedThinkingMessages, setCollapsedThinkingMessages] = useState<Set<string>>(new Set());
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Set isClient to true when component mounts and check for stored login state
+  useEffect(() => {
+    setIsClient(true);
+    
+    // Check if user is already logged in from localStorage
+    const storedLoginState = localStorage.getItem('hsbc_user_logged_in');
+    const storedUsername = localStorage.getItem('hsbc_username');
+    const storedDefaultPasswordState = localStorage.getItem('hsbc_default_password');
+    
+    if (storedLoginState === 'true' && storedUsername) {
+      setIsLoggedIn(true);
+      setUsername(storedUsername);
+      
+      // Check if user has a default password
+      if (storedDefaultPasswordState === 'true') {
+        setShowPasswordModal(true);
+      }
+    }
+  }, []);
+
+  // Auto-logout after 30 minutes of inactivity
+  useEffect(() => {
+    if (isLoggedIn) {
+      let logoutTimer: NodeJS.Timeout;
+      
+      // Function to reset the timer
+      const resetTimer = () => {
+        if (logoutTimer) clearTimeout(logoutTimer);
+        logoutTimer = setTimeout(() => {
+          handleLogout();
+        }, 30 * 60 * 1000); // 30 minutes in milliseconds
+      };
+      
+      // Set initial timer
+      resetTimer();
+      
+      // Reset timer on user activity
+      const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart'];
+      
+      // Add event listeners to reset timer on user activity
+      events.forEach(event => {
+        window.addEventListener(event, resetTimer);
+      });
+      
+      // Cleanup function
+      return () => {
+        if (logoutTimer) clearTimeout(logoutTimer);
+        events.forEach(event => {
+          window.removeEventListener(event, resetTimer);
+        });
+      };
+    }
+  }, [isLoggedIn]);
+
+  // Handle login form submission
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    
+    // Set loading state to true
+    setIsLoginLoading(true);
+    
+    // Simulate loading time (1 second)
+    setTimeout(async () => {
+      try {
+        // Use the validateUser function from userAccounts.ts
+        const authResult = await validateUser(username, password);
+        
+        if (authResult.success) {
+          setIsLoggedIn(true);
+          setErrorMessage("");
+          
+          // Store login state in localStorage
+          localStorage.setItem('hsbc_user_logged_in', 'true');
+          localStorage.setItem('hsbc_username', username);
+          
+          // Check if user has a default password
+          if (authResult.isDefaultPassword) {
+            setShowPasswordModal(true);
+            localStorage.setItem('hsbc_default_password', 'true');
+          } else {
+            localStorage.removeItem('hsbc_default_password');
+          }
+        } else {
+          setErrorMessage(authResult.message || "Invalid username or password. Please try again.");
+        }
+      } catch (error) {
+        setErrorMessage("An error occurred during login. Please try again.");
+        console.error("Login error:", error);
+      } finally {
+        // Set loading state back to false
+        setIsLoginLoading(false);
+      }
+    }, 1500);
+  };
+  
+  // Handle logout
+  const handleLogout = () => {
+    // Clear login state
+    setIsLoggedIn(false);
+    
+    // Remove from localStorage
+    localStorage.removeItem('hsbc_user_logged_in');
+    localStorage.removeItem('hsbc_username');
+    localStorage.removeItem('hsbc_default_password');
+    
+    // Force a re-render to ensure components update
+    setIsClient(false);
+    setTimeout(() => setIsClient(true), 0);
+  };
+  
+  // Handle password change success
+  const handlePasswordChangeSuccess = () => {
+    setShowPasswordModal(false);
+    localStorage.removeItem('hsbc_default_password');
+    // You might want to show a success message here
+  };
+  
+  // Handle password change later
+  const handlePasswordChangeLater = () => {
+    setShowPasswordModal(false);
+    // We keep the default password state in localStorage so it will show again next login
+  };
 
   /**
    * Clears the chat history and resets to initial state
@@ -603,7 +742,192 @@ export default function GenAIChatbot() {
   }, [inputText]);
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="hsbc-app-container">
+      {/* Only render content on the client side */}
+      {isClient && (
+        <>
+          {!isLoggedIn ? (
+            // Login form with responsive styling
+            <div className="login-container" style={{
+              width: "90%",  // Use percentage instead of viewport width
+              maxWidth: "450px", // Maximum width for larger screens
+              minHeight: "320px", // Minimum height to ensure content fits
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              padding: "20px",
+              boxShadow: "0 0 10px rgba(0,0,0,0.1)",
+              borderRadius: "5px",
+              backgroundColor: "#fff",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              margin: "0 auto" // Center horizontally
+            }}>
+              <div style={{ textAlign: "center", marginBottom: "20px" }}>
+                <div style={{ display: "flex", justifyContent: "center", marginBottom: "10px" }}>
+                  <Image 
+                    src="/hongkong-hsbc-logo-en.svg" 
+                    alt="HSBC Logo" 
+                    width={210} 
+                    height={70}
+                    style={{ maxWidth: "100%", height: "auto" }} // Make image responsive
+                    priority
+                  />
+                </div>
+                <h2 style={{ 
+                  color: "gray", 
+                  marginBottom: "5px",
+                  fontSize: "calc(1rem + 0.5vw)" // Responsive font size
+                }}>
+                  Welcome to HSBC GenAI Chatbot
+                </h2>
+                <p style={{ 
+                  color: "gray", 
+                  marginBottom: "10px",
+                  fontSize: "calc(0.8rem + 0.2vw)" // Responsive font size
+                }}>
+                  Please login to access the application.
+                </p>
+              </div>
+              
+              <form onSubmit={handleLogin}>
+                {errorMessage && (
+                  <div style={{ 
+                    color: "#000000", 
+                    backgroundColor: "#ffeeee", 
+                    padding: "10px", 
+                    borderRadius: "4px", 
+                    marginBottom: "15px",
+                    fontSize: "14px", // Smaller font size for error
+                    wordBreak: "break-word" // Prevent text overflow
+                  }}>
+                    {errorMessage}
+                  </div>
+                )}
+                
+                <div style={{ marginBottom: "15px" }}>
+                  <label htmlFor="username" style={{ 
+                    display: "block", 
+                    marginBottom: "5px", 
+                    fontWeight: "bold", 
+                    color: "#000000",
+                    fontSize: "16px" // Consistent font size
+                  }}>
+                    Username
+                  </label>
+                  <input
+                    type="text"
+                    id="username"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    style={{
+                      width: "100%",
+                      padding: "10px",
+                      border: "1px solid #ccc",
+                      borderRadius: "4px",
+                      color: "#000000",
+                      boxSizing: "border-box" // Include padding in width calculation
+                    }}
+                    required
+                  />
+                </div>
+                
+                <div style={{ marginBottom: "20px" }}>
+                  <label htmlFor="password" style={{ 
+                    display: "block", 
+                    marginBottom: "5px", 
+                    fontWeight: "bold", 
+                    color: "#000000",
+                    fontSize: "16px" // Consistent font size
+                  }}>
+                    Password
+                  </label>
+                  <input
+                    type="password"
+                    id="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    style={{
+                      width: "100%",
+                      padding: "10px",
+                      border: "1px solid #ccc",
+                      borderRadius: "4px",
+                      color: "#000000",
+                      boxSizing: "border-box" // Include padding in width calculation
+                    }}
+                    required
+                  />
+                </div>
+                
+                {/* Loading bar that appears during login process */}
+                {isLoginLoading && (
+                  <div style={{ marginBottom: "15px" }}>
+                    <div style={{
+                      width: "100%",
+                      height: "4px",
+                      backgroundColor: "#f0f0f0",
+                      borderRadius: "2px",
+                      overflow: "hidden"
+                    }}>
+                      <div style={{
+                        width: "30%",
+                        height: "100%",
+                        backgroundColor: "#db0011", // HSBC red color
+                        borderRadius: "2px",
+                        animation: "loading 1s infinite linear"
+                      }}></div>
+                    </div>
+                    <style jsx>{`
+                      @keyframes loading {
+                        0% {
+                          transform: translateX(-100%);
+                        }
+                        100% {
+                          transform: translateX(400%);
+                        }
+                      }
+                    `}</style>
+                  </div>
+                )}
+                
+                <button
+                  type="submit"
+                  disabled={isLoginLoading}
+                  style={{
+                    width: "100%",
+                    padding: "12px",
+                    backgroundColor: isLoginLoading ? "#666666" : "#000000",
+                    color: "white",
+                    border: "none",
+                    borderRadius: "4px",
+                    cursor: isLoginLoading ? "not-allowed" : "pointer",
+                    fontSize: "16px",
+                    fontWeight: "bold", // Make button text more visible
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center"
+                  }}
+                >
+                  {isLoginLoading ? "Logging in..." : "Login"}
+                </button>
+              </form>
+            </div>
+          ) : (
+            // Show chatbot content only after successful login
+            <>
+              {/* Password change modal */}
+              {showPasswordModal && (
+                <PasswordChangeModal
+                  username={username}
+                  currentPassword={password}
+                  onClose={handlePasswordChangeLater}
+                  onSuccess={handlePasswordChangeSuccess}
+                />
+              )}
+              
+              <div className="min-h-screen bg-gray-50 flex flex-col">
       {/* Header */}
       <div className="bg-white border-b border-gray-200 px-2 md:px-4 py-3 flex items-center justify-between">
         <div className="flex items-center space-x-2 md:space-x-4 flex-1">
@@ -800,6 +1124,11 @@ export default function GenAIChatbot() {
           </div>
         </div>
       </div>
+              </div>
+            </>
+          )}
+        </>
+      )}
     </div>
     );
  }

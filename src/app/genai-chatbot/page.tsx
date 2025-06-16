@@ -175,6 +175,9 @@ export default function GenAIChatbot() {
     if (progressText.includes('Step 2: Retrieving content from the identified sources')) {
       const stepContent = progressText.replace(/\n*Step 2: Retrieving content from the identified sources\n/, '').trim();
       createThinkingStepMessage(2, 'Retrieving content from the identified sources', stepContent);
+    } else if (progressText.includes('Step 2: No specific content sources identified')) {
+      const stepContent = progressText.replace(/\n*Step 2: No specific content sources identified\n/, '').trim();
+      createThinkingStepMessage(2, 'No specific content sources identified', stepContent);
     } else if (progressText.includes('Step 3: Generating comprehensive response')) {
       const stepContent = progressText.replace(/\n*Step 3: Generating comprehensive response\n/, '').trim();
       createThinkingStepMessage(3, 'Generating comprehensive response', stepContent);
@@ -404,6 +407,16 @@ export default function GenAIChatbot() {
             const paths = extractRelevantPaths(accumulatedText);
             if (paths.length > 0) {
               await processRelevantPaths(paths, conversationHistory, userMessage, aiMessageId);
+            } else {
+              // No relevant paths found, proceed directly to summarization with original question
+              updateThinkingProgress(aiMessageId, '\n\nStep 1: No specific content sources identified\n' + 
+                'Proceeding with general knowledge response...');
+              
+              updateThinkingProgress(aiMessageId, '\n\nStep 2: Generating comprehensive response\n' + 
+                'Processing your question and preparing final answer...');
+              
+              // Call summarization API with empty content but original question
+              await callSummarizationAPI(conversationHistory, userMessage, { content: [] });
             }
             return;
           }
@@ -672,11 +685,15 @@ export default function GenAIChatbot() {
                           onClick={() => toggleThinkingMessage(message.id)}
                         >
                           <span className="text-base md:text-lg font-semibold text-gray-700">
-                            {message.text.includes('Analyze your question') ? 'Step 1 Analyze your question' :
-                             message.text.includes('Step 2:') ? 'Step 2: Retrieving content' :
-                             message.text.includes('Step 3:') ? 'Step 3: Generating comprehensive response' :
-                             'Step 1: Analyzing your question'}
-                          </span>
+            {message.text.includes('Analyze your question') ? 'Step 1: Analyzing your question' :
+             message.text.includes('Step 2: Retrieving content from the identified sources') ? 'Step 2: Retrieving content from identified sources' :
+             message.text.includes('Step 2: No specific content sources identified') ? 'Step 2: No specific content sources identified' :
+             message.text.includes('Step 3: Generating comprehensive response') ? 'Step 3: Generating comprehensive response' :
+             message.text.startsWith('Step 1:') ? 'Step 1: Analyzing your question' :
+             message.text.startsWith('Step 2:') ? 'Step 2: Processing content' :
+             message.text.startsWith('Step 3:') ? 'Step 3: Generating response' :
+             'Step 1: Analyzing your question'}
+          </span>
                           {collapsedThinkingMessages.has(message.id) ? (
                             <ChevronDown className="w-4 h-4 text-gray-400" />
                           ) : (
@@ -689,7 +706,7 @@ export default function GenAIChatbot() {
                       {(!message.messageType || message.messageType !== 'thinking' || !collapsedThinkingMessages.has(message.id)) && (
                         <div className={`text-xs md:text-sm leading-relaxed prose prose-sm max-w-none ${
                           message.messageType === 'thinking' ? 'prose-gray' : 'text-sm md:text-base'
-                        } prose-table:table-auto prose-table:border-collapse prose-th:border prose-th:border-gray-300 prose-th:bg-gray-50 prose-th:px-3 prose-th:py-2 prose-th:text-left prose-td:border prose-td:border-gray-300 prose-td:px-3 prose-td:py-2`}>
+                        } prose-table:table-auto prose-table:border-collapse prose-th:border prose-th:border-gray-300 prose-th:bg-gray-50 prose-th:px-3 prose-th:py-2 prose-th:text-left prose-td:border prose-td:border-gray-300 prose-td:px-3 prose-td:py-2 prose-a:text-blue-600 prose-a:underline prose-a:hover:text-blue-800`}>
                           <ReactMarkdown remarkPlugins={[remarkGfm]}>
                             {message.messageType === 'thinking' ? formatThinkingMessage(message.text).replace(/^Step \d+:\s*/, '') : message.text}
                           </ReactMarkdown>

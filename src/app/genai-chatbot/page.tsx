@@ -3,8 +3,9 @@
 import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ChevronLeft, Send, User, Bot, ThumbsUp, ThumbsDown, RotateCcw } from 'lucide-react';
+import { ChevronLeft, Send, User, Bot, ThumbsUp, ThumbsDown, RotateCcw, ChevronDown, ChevronUp } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 interface Message {
   id: string;
@@ -37,6 +38,7 @@ export default function GenAIChatbot() {
   const [isLoading, setIsLoading] = useState(false);
   const [hasReceivedFirstResponse, setHasReceivedFirstResponse] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
+  const [collapsedThinkingMessages, setCollapsedThinkingMessages] = useState<Set<string>>(new Set());
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -55,6 +57,22 @@ export default function GenAIChatbot() {
     ]);
     setHasReceivedFirstResponse(false);
     setIsStreaming(false);
+    setCollapsedThinkingMessages(new Set());
+  };
+
+  /**
+   * Toggles the collapsed state of a thinking message
+   */
+  const toggleThinkingMessage = (messageId: string) => {
+    setCollapsedThinkingMessages(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(messageId)) {
+        newSet.delete(messageId);
+      } else {
+        newSet.add(messageId);
+      }
+      return newSet;
+    });
   };
 
   /**
@@ -107,7 +125,7 @@ export default function GenAIChatbot() {
       let formattedText = '';
       
       // Add step 1 header
-      formattedText += 'Step 1 Analyze your question:\n';
+      formattedText += 'Step 1: Analyze your question\n';
       
       // Add rationale if available
       if (jsonData.rationale) {
@@ -128,17 +146,47 @@ export default function GenAIChatbot() {
   };
 
   /**
+   * Creates a new thinking step message
+   * @param stepNumber - Step number (1, 2, or 3)
+   * @param stepTitle - Title of the step
+   * @param stepContent - Content of the step
+   */
+  const createThinkingStepMessage = (stepNumber: number, stepTitle: string, stepContent: string) => {
+    const stepMessageId = `${Date.now()}-step-${stepNumber}`;
+    const stepMessage: Message = {
+      id: stepMessageId,
+      text: `Step ${stepNumber}: ${stepTitle}\n${stepContent}`,
+      isUser: false,
+      timestamp: new Date(),
+      messageType: 'thinking'
+    };
+    
+    setMessages(prev => [...prev, stepMessage]);
+    return stepMessageId;
+  };
+
+  /**
    * Updates the thinking message with progress information
    * @param aiMessageId - ID of the thinking message to update
    * @param progressText - Text to append to the thinking message
    */
   const updateThinkingProgress = (aiMessageId: string, progressText: string) => {
-    setMessages(prev => prev.map(msg => {
-      if (msg.id === aiMessageId && msg.messageType === 'thinking') {
-        return { ...msg, text: msg.text + progressText };
-      }
-      return msg;
-    }));
+    // Check if this is a step 2 or step 3 update
+    if (progressText.includes('Step 2: Retrieving content from the identified sources')) {
+      const stepContent = progressText.replace(/\n*Step 2: Retrieving content from the identified sources\n/, '').trim();
+      createThinkingStepMessage(2, 'Retrieving content from the identified sources', stepContent);
+    } else if (progressText.includes('Step 3: Generating comprehensive response')) {
+      const stepContent = progressText.replace(/\n*Step 3: Generating comprehensive response\n/, '').trim();
+      createThinkingStepMessage(3, 'Generating comprehensive response', stepContent);
+    } else {
+      // For other updates, use the original behavior
+      setMessages(prev => prev.map(msg => {
+        if (msg.id === aiMessageId && msg.messageType === 'thinking') {
+          return { ...msg, text: msg.text + progressText };
+        }
+        return msg;
+      }));
+    }
   };
 
   /**
@@ -421,7 +469,7 @@ export default function GenAIChatbot() {
     
     // Step 3: Call summarization API with retrieved content
     updateThinkingProgress(aiMessageId, '\n\nStep 3: Generating comprehensive response\n' + 
-      'Processing retrieved content and preparing final answer...');
+      ', processing retrieved content and preparing final answer...');
     
     await callSummarizationAPI(conversationHistory, userMessage, contentData);
   };
@@ -587,7 +635,7 @@ export default function GenAIChatbot() {
                 <>
                   {/* Message Bubble */}
                   <div
-                    className="max-w-[75%] sm:max-w-xs md:max-w-md lg:max-w-lg xl:max-w-xl px-3 md:px-4 py-2 md:py-3 rounded-lg bg-blue-100 text-gray-800 border border-blue-200 rounded-br-sm"
+                    className="w-[80%] px-3 md:px-4 py-2 md:py-3 rounded-lg bg-blue-100 text-gray-800 border border-blue-200 rounded-br-sm"
                   >
                     <p className="text-sm md:text-base leading-relaxed">{message.text}</p>
                     <p className="text-xs mt-1 text-blue-600">
@@ -601,25 +649,53 @@ export default function GenAIChatbot() {
                 </>
               ) : (
                 <>
-                  {/* Avatar */}
-                  <div className="flex-shrink-0 w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center bg-red-600 text-white">
-                    <Bot className="w-4 h-4 md:w-5 md:h-5" />
-                  </div>
+                  {/* Avatar - Show for first thinking message (Step 1) and final messages */}
+                  {((message.messageType === 'thinking' && message.text.includes('Analyze your question')) || message.messageType === 'final') && (
+                    <div className="flex-shrink-0 w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center bg-red-600 text-white">
+                      <Bot className="w-4 h-4 md:w-5 md:h-5" />
+                    </div>
+                  )}
                   
                   {/* Message Bubble */}
-                  <div className="max-w-[75%] sm:max-w-xs md:max-w-md lg:max-w-lg xl:max-w-xl">
-                    <div className={`px-3 md:px-4 py-2 md:py-3 rounded-lg border rounded-bl-sm ${
+                  <div className={`w-[80%] ${
+                    message.messageType === 'thinking' && !message.text.includes('Analyze your question') ? 'ml-11 md:ml-13' : ''
+                  }`}>
+                    <div className={`px-3 md:px-4 py-2 md:py-3 rounded-lg ${
                       message.messageType === 'thinking' 
-                        ? 'bg-gray-50 text-gray-500 border-gray-300' 
-                        : 'bg-white text-gray-800 border-gray-200'
+                        ? 'bg-gray-50 text-gray-500' 
+                        : 'bg-white text-gray-800 border border-gray-200 rounded-bl-sm'
                     }`}>
-                      <div className={`text-sm md:text-base leading-relaxed prose prose-sm max-w-none ${
-                        message.messageType === 'thinking' ? 'prose-gray' : ''
-                      }`}>
-                        <ReactMarkdown>
-                          {message.messageType === 'thinking' ? formatThinkingMessage(message.text) : message.text}
-                        </ReactMarkdown>
-                      </div>
+                      {/* Collapsible header for thinking messages */}
+                      {message.messageType === 'thinking' && (
+                        <div 
+                          className="flex items-center justify-between cursor-pointer mb-2 hover:bg-gray-100 rounded p-1 -m-1"
+                          onClick={() => toggleThinkingMessage(message.id)}
+                        >
+                          <span className="text-base md:text-lg font-semibold text-gray-700">
+                            {message.text.includes('Analyze your question') ? 'Step 1 Analyze your question' :
+                             message.text.includes('Step 2:') ? 'Step 2: Retrieving content' :
+                             message.text.includes('Step 3:') ? 'Step 3: Generating comprehensive response' :
+                             'Step 1: Analyzing your question'}
+                          </span>
+                          {collapsedThinkingMessages.has(message.id) ? (
+                            <ChevronDown className="w-4 h-4 text-gray-400" />
+                          ) : (
+                            <ChevronUp className="w-4 h-4 text-gray-400" />
+                          )}
+                        </div>
+                      )}
+                      
+                      {/* Message content - collapsible for thinking messages */}
+                      {(!message.messageType || message.messageType !== 'thinking' || !collapsedThinkingMessages.has(message.id)) && (
+                        <div className={`text-xs md:text-sm leading-relaxed prose prose-sm max-w-none ${
+                          message.messageType === 'thinking' ? 'prose-gray' : 'text-sm md:text-base'
+                        } prose-table:table-auto prose-table:border-collapse prose-th:border prose-th:border-gray-300 prose-th:bg-gray-50 prose-th:px-3 prose-th:py-2 prose-th:text-left prose-td:border prose-td:border-gray-300 prose-td:px-3 prose-td:py-2`}>
+                          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                            {message.messageType === 'thinking' ? formatThinkingMessage(message.text).replace(/^Step \d+:\s*/, '') : message.text}
+                          </ReactMarkdown>
+                        </div>
+                      )}
+                      
                       <p className="text-xs mt-1 text-gray-500">
                         {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                         {message.messageType === 'thinking' && <span className="ml-2 italic">(thinking process)</span>}

@@ -49,7 +49,7 @@ export async function POST(request: NextRequest) {
         console.log('Title:', row.title);
         console.log('File Type:', row.file_type);
         console.log('Raw Content:');
-        console.log(row.raw_content);
+        // console.log(row.raw_content); // hide content for now as it's too much
         console.log('='.repeat(50));
       });
 

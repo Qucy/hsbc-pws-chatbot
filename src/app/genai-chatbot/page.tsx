@@ -57,6 +57,9 @@ export default function GenAIChatbot() {
   const [collapsedThinkingMessages, setCollapsedThinkingMessages] = useState<Set<string>>(new Set());
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
+  const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
+  const [userHasScrolled, setUserHasScrolled] = useState(false);
 
   // Set isClient to true when component mounts and check for stored login state
   useEffect(() => {
@@ -338,9 +341,46 @@ export default function GenAIChatbot() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  /**
+   * Checks if user is near the bottom of the chat
+   */
+  const isNearBottom = () => {
+    if (!chatContainerRef.current) return true;
+    
+    const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
+    const threshold = 100; // pixels from bottom
+    return scrollHeight - scrollTop - clientHeight < threshold;
+  };
+
+  /**
+   * Handles scroll events to detect user manual scrolling
+   */
+  const handleScroll = () => {
+    if (!chatContainerRef.current) return;
+    
+    const isAtBottom = isNearBottom();
+    setShouldAutoScroll(isAtBottom);
+    
+    // If user scrolls up during streaming, mark as manually scrolled
+    if (isStreaming && !isAtBottom) {
+      setUserHasScrolled(true);
+    }
+  };
+
+  // Modified useEffect for auto-scrolling
   useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
+    // Only auto-scroll if:
+    // 1. User hasn't manually scrolled up during streaming, OR
+    // 2. User is near the bottom of the chat, OR
+    // 3. Streaming has finished (reset user scroll state)
+    if (!isStreaming) {
+      setUserHasScrolled(false);
+    }
+    
+    if (shouldAutoScroll && (!userHasScrolled || !isStreaming)) {
+      scrollToBottom();
+    }
+  }, [messages, shouldAutoScroll, userHasScrolled, isStreaming]);
 
   /**
    * Extracts relevant paths from the AI response text
@@ -959,7 +999,15 @@ export default function GenAIChatbot() {
       </div>
 
       {/* Chat Messages Area */}
-      <div className="flex-1 overflow-y-auto px-2 md:px-4 py-4 md:py-6">
+      <div 
+        ref={chatContainerRef}
+        className="flex-1 overflow-y-auto px-2 md:px-4 py-4 md:py-6"
+        style={{ 
+          minHeight: '400px',
+          maxHeight: 'calc(100vh - 140px)'
+        }}
+        onScroll={handleScroll}
+      >
         <div className="w-full max-w-none mx-auto space-y-4" style={{maxWidth: '80%'}}>
           {messages.map((message) => (
             <div

@@ -802,6 +802,7 @@ export const wellPlusSitemap = `📁 well-plus
 // Credit card examples for context-aware responses
 export const creditCardExamples = `
 Example 1 - User question: "How do I use Apple Pay with my HSBC card?"
+Return below keys in JSON format
 rationale: "Apple Pay is a payment service that allows users to make payments using their Apple devices, such as iPhones and iPads. HSBC credit cards may support Apple Pay for online and in-store payments."
 relevant_paths: ['https://www.hsbc.com.hk/credit-cards/products/payment-services/apple-pay']
 
@@ -822,6 +823,7 @@ relevant_paths: [
 
 // Accounts examples for context-aware responses
 export const accountsExamples = `
+Return below keys in JSON format
 Example 1 - User question: "How do I open an HSBC One account?"
 rationale: "HSBC One is a comprehensive banking account that combines current and savings features. Users often inquire about the account opening process and requirements."
 relevant_paths: ['https://www.hsbc.com.hk/accounts/products/one']
@@ -838,6 +840,7 @@ relevant_paths: [
 
 // Insurance examples for context-aware responses
 export const insuranceExamples = `
+Return below keys in JSON format
 Example 1 - User question: "What life insurance options does HSBC offer?"
 rationale: "The user is asking about life insurance products. HSBC offers various life insurance plans including family protection, wealth accumulation, and retirement planning options."
 relevant_paths: [
@@ -860,6 +863,7 @@ relevant_paths: [
 
 // Investments examples for context-aware responses
 export const investmentsExamples = `
+Return below keys in JSON format
 Example 1 - User question: "How do I start investing in stocks with HSBC?"
 rationale: "The user is asking about stock investment services. HSBC offers various stock trading platforms and services including Hong Kong stocks, US stocks, and China A-shares."
 relevant_paths: [
@@ -883,6 +887,7 @@ relevant_paths: [
 
 // Loans examples for context-aware responses
 export const loansExamples = `
+Return below keys in JSON format
 Example 1 - User question: "What personal loan options does HSBC have?"
 rationale: "The user is asking about personal loan products. HSBC offers various personal loan options including personal instalment loans, tax loans, and revolving credit facilities."
 relevant_paths: [
@@ -903,39 +908,39 @@ relevant_paths: [
 ]
 `;
 
-// Sitemap mapping for easy access
+// Sitemap mapping for easy access, with examples - if no examples, use credit card examples
 export const sitemapSections = {
   accounts: accountsSitemap + accountsExamples,
-  banking: bankingSitemap,
-  broking: brokingSitemap,
-  campaigns: campaignsSitemap,
+  banking: bankingSitemap + creditCardExamples,
+  broking: brokingSitemap + creditCardExamples,
+  campaigns: campaignsSitemap + creditCardExamples,
   'community-banking': communityBankingSitemap,
   'credit-cards': creditCardsSitemap + creditCardExamples,
-  'debit-cards': debitCardsSitemap,
-  digital: digitalSitemap,
-  fees: feesSitemap,
-  'financial-education': financialEducationSitemap,
-  'financial-wellbeing': financialWellbeingSitemap,
-  finfit: finfitSitemap,
-  healthpass: healthpassSitemap,
-  help: helpSitemap,
+  'debit-cards': debitCardsSitemap + creditCardExamples,
+  digital: digitalSitemap + creditCardExamples,
+  fees: feesSitemap + creditCardExamples,
+  'financial-education': financialEducationSitemap + creditCardExamples,
+  'financial-wellbeing': financialWellbeingSitemap + creditCardExamples,
+  finfit: finfitSitemap + creditCardExamples,
+  healthpass: healthpassSitemap + creditCardExamples,
+  help: helpSitemap + creditCardExamples,
   insurance: insuranceSitemap + insuranceExamples,
-  international: internationalSitemap,
+  international: internationalSitemap + creditCardExamples,
   investments: investmentsSitemap + investmentsExamples,
-  legal: legalSitemap,
+  legal: legalSitemap + creditCardExamples,
   loans: loansSitemap + loansExamples,
-  misc: miscSitemap,
-  mobile: mobileSitemap,
-  mortgages: mortgagesSitemap,
-  mpf: mpfSitemap,
-  premier: premierSitemap,
-  'premier-elite': premierEliteSitemap,
-  sustainability: sustainabilitySitemap,
-  'transfer-payments': transferPaymentsSitemap,
-  'ways-to-bank': waysToBankSitemap,
-  'wealth-financing': wealthFinancingSitemap,
-  'wealth-management': wealthManagementSitemap,
-  'well-plus': wellPlusSitemap
+  misc: miscSitemap + creditCardExamples,
+  mobile: mobileSitemap + creditCardExamples,
+  mortgages: mortgagesSitemap + creditCardExamples,
+  mpf: mpfSitemap + creditCardExamples,
+  premier: premierSitemap + creditCardExamples,
+  'premier-elite': premierEliteSitemap + creditCardExamples,
+  sustainability: sustainabilitySitemap + creditCardExamples,
+  'transfer-payments': transferPaymentsSitemap + creditCardExamples,
+  'ways-to-bank': waysToBankSitemap + creditCardExamples,
+  'wealth-financing': wealthFinancingSitemap + creditCardExamples,
+  'wealth-management': wealthManagementSitemap + creditCardExamples,
+  'well-plus': wellPlusSitemap + creditCardExamples
 } as const;
 
 // Helper function to get relevant sitemaps

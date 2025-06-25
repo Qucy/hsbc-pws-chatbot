@@ -4,10 +4,10 @@ import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ChevronLeft, Send, User, Bot, ThumbsUp, ThumbsDown, RotateCcw, ChevronDown, ChevronUp } from 'lucide-react';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
+import parse from 'html-react-parser';
 import { validateUser } from "../../utils/userAccounts";
 import PasswordChangeModal from "../../components/PasswordChangeModal";
+import PersonalLoanCalculator from '../../components/PersonalLoanCalculator';
 
 interface Message {
   id: string;
@@ -777,6 +777,40 @@ export default function GenAIChatbot() {
     }
   };
 
+  /**
+   * Renders message content with loan calculator support
+   */
+  const renderMessageContent = (message: Message) => {
+    // Check if the message contains the loan calculator marker
+    if (message.text.includes('[LOAN_CALCULATOR]')) {
+      const parts = message.text.split('[LOAN_CALCULATOR]');
+      return (
+        <div>
+          {parts[0] && (
+            <div className="prose prose-sm max-w-none prose-table:table-auto prose-table:border-collapse prose-th:border prose-th:border-gray-300 prose-th:bg-gray-50 prose-th:px-3 prose-th:py-2 prose-th:text-left prose-td:border prose-td:border-gray-300 prose-td:px-3 prose-td:py-2 prose-a:text-blue-600 prose-a:underline prose-a:hover:text-blue-800">
+              {parse(parts[0])}
+            </div>
+          )}
+          <div className="my-6">
+            <PersonalLoanCalculator />
+          </div>
+          {parts[1] && (
+            <div className="prose prose-sm max-w-none prose-table:table-auto prose-table:border-collapse prose-th:border prose-th:border-gray-300 prose-th:bg-gray-50 prose-th:px-3 prose-th:py-2 prose-th:text-left prose-td:border prose-td:border-gray-300 prose-td:px-3 prose-td:py-2 prose-a:text-blue-600 prose-a:underline prose-a:hover:text-blue-800">
+              {parse(parts[1])}
+            </div>
+          )}
+        </div>
+      );
+    }
+    
+    // Regular message rendering
+    return (
+      <div className="text-xs md:text-sm leading-relaxed prose prose-sm max-w-none prose-table:table-auto prose-table:border-collapse prose-th:border prose-th:border-gray-300 prose-th:bg-gray-50 prose-th:px-3 prose-th:py-2 prose-th:text-left prose-td:border prose-td:border-gray-300 prose-td:px-3 prose-td:py-2 prose-a:text-blue-600 prose-a:underline prose-a:hover:text-blue-800">
+        {parse(message.messageType === 'thinking' ? formatThinkingMessage(message.text).replace(/^Step \d+:\s*/, '') : message.text)}
+      </div>
+    );
+  };
+
   useEffect(() => {
     adjustTextareaHeight();
   }, [inputText]);
@@ -1076,13 +1110,15 @@ export default function GenAIChatbot() {
                       
                       {/* Message content - collapsible for thinking messages */}
                       {(!message.messageType || message.messageType !== 'thinking' || !collapsedThinkingMessages.has(message.id)) && (
-                        <div className={`text-xs md:text-sm leading-relaxed prose prose-sm max-w-none ${
-                          message.messageType === 'thinking' ? 'prose-gray' : 'text-sm md:text-base'
-                        } prose-table:table-auto prose-table:border-collapse prose-th:border prose-th:border-gray-300 prose-th:bg-gray-50 prose-th:px-3 prose-th:py-2 prose-th:text-left prose-td:border prose-td:border-gray-300 prose-td:px-3 prose-td:py-2 prose-a:text-blue-600 prose-a:underline prose-a:hover:text-blue-800`}>
-                          <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                            {message.messageType === 'thinking' ? formatThinkingMessage(message.text).replace(/^Step \d+:\s*/, '') : message.text}
-                          </ReactMarkdown>
-                        </div>
+                        message.messageType === 'thinking' ? (
+                          <div className="text-xs md:text-sm leading-relaxed prose prose-sm max-w-none prose-gray prose-table:table-auto prose-table:border-collapse prose-th:border prose-th:border-gray-300 prose-th:bg-gray-50 prose-th:px-3 prose-th:py-2 prose-th:text-left prose-td:border prose-td:border-gray-300 prose-td:px-3 prose-td:py-2 prose-a:text-blue-600 prose-a:underline prose-a:hover:text-blue-800">
+                            {parse(formatThinkingMessage(message.text).replace(/^Step \d+:\s*/, ''))}
+                          </div>
+                        ) : (
+                          <div className="text-sm md:text-base">
+                            {renderMessageContent(message)}
+                          </div>
+                        )
                       )}
                       
                       <p className="text-xs mt-1 text-gray-500">
